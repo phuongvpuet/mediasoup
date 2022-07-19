@@ -88,13 +88,13 @@
             bind:edias_restart_ice_ani="@{roomProps.restartIceAnimation}" />
 
 
-        <org.mediasoup.droid.demo.view.MeView
-            android:id="@+id/me"
-            android:layout_width="220dp"
-            android:layout_height="200dp"
-            android:layout_alignParentBottom="true"
-            android:layout_marginLeft="10dp"
-            android:layout_marginBottom="10dp" />
+      <org.mediasoup.droid.demo.view.MeView
+        android:id="@+id/me"
+        android:layout_width="220dp"
+        android:layout_height="200dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginLeft="10dp"
+        android:layout_marginBottom="10dp" />
 
         <TextView
             android:id="@+id/version"

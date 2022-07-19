@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -67,6 +68,7 @@ public class RoomActivity extends AppCompatActivity {
   }
 
   private void createRoom() {
+    Log.e(TAG, "Createeeeeeeeee Roommmmmmmmmmmmmmmm");
     mOptions = new RoomOptions();
     loadRoomConfig();
 
@@ -86,10 +88,8 @@ public class RoomActivity extends AppCompatActivity {
     mDisplayName = preferences.getString("displayName", "");
     mForceH264 = preferences.getBoolean("forceH264", false);
     mForceVP9 = preferences.getBoolean("forceVP9", false);
-    if (TextUtils.isEmpty(mRoomId)) {
-      mRoomId = getRandomString(8);
-      preferences.edit().putString("roomId", mRoomId).apply();
-    }
+    mRoomId = "zps_zoom";
+    preferences.edit().putString("roomId", mRoomId).apply();
     if (TextUtils.isEmpty(mPeerId)) {
       mPeerId = getRandomString(8);
       preferences.edit().putString("peerId", mPeerId).apply();
@@ -210,6 +210,7 @@ public class RoomActivity extends AppCompatActivity {
       };
 
   private void checkPermission() {
+    Log.e(TAG, "Check Permissionnnnnnnnnnnnnnnnnn");
     String[] permissions = {
       Manifest.permission.INTERNET,
       Manifest.permission.RECORD_AUDIO,
@@ -223,6 +224,7 @@ public class RoomActivity extends AppCompatActivity {
   }
 
   private void destroyRoom() {
+    Logger.e(TAG, "Destroy Roommmmmmmmmmmmm");
     if (mRoomClient != null) {
       mRoomClient.close();
       mRoomClient = null;

@@ -670,14 +670,17 @@ public class RoomClient extends RoomMessageHandler {
       String rtpCapabilities = mMediasoupDevice.getRtpCapabilities();
 
       // Create mediasoup Transport for sending (unless we don't want to produce).
-      if (mOptions.isProduce()) {
-        createSendTransport();
-      }
+//      if (mOptions.isProduce()) {
+//        createSendTransport();
+//      }
+      createSendTransport();
+
 
       // Create mediasoup Transport for sending (unless we don't want to consume).
-      if (mOptions.isConsume()) {
-        createRecvTransport();
-      }
+//      if (mOptions.isConsume()) {
+//      }
+      createRecvTransport();
+
 
       // Join now into the room.
       // TODO(HaiyangWu): Don't send our RTP capabilities if we don't want to consume.
@@ -1047,7 +1050,7 @@ public class RoomClient extends RoomMessageHandler {
       String type = data.optString("type");
       String appData = data.optString("appData");
       boolean producerPaused = data.optBoolean("producerPaused");
-
+      Logger.d(TAG,"Comsume remove");
       Consumer consumer =
           mRecvTransport.consume(
               c -> {
@@ -1059,8 +1062,9 @@ public class RoomClient extends RoomMessageHandler {
               kind,
               rtpParameters,
               appData);
-
+      Logger.d(TAG, "Put Comsumer");
       mConsumers.put(consumer.getId(), new ConsumerHolder(peerId, consumer));
+      Logger.d(TAG, "Add comsumer");
       mStore.addConsumer(peerId, type, consumer, producerPaused);
 
       // We are ready. Answer the protoo request so the server will
@@ -1074,6 +1078,7 @@ public class RoomClient extends RoomMessageHandler {
     } catch (Exception e) {
       e.printStackTrace();
       logError("\"newConsumer\" request failed:", e);
+      Logger.e(TAG, "Error Comsumer");
       mStore.addNotify("error", "Error creating a Consumer: " + e.getMessage());
     }
   }
