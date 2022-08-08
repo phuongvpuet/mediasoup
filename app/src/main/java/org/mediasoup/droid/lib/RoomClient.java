@@ -7,6 +7,7 @@ import android.os.HandlerThread;
 import android.os.Looper;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.WorkerThread;
@@ -586,7 +587,7 @@ public class RoomClient extends RoomMessageHandler {
         @Override
         public void onRequest(
             @NonNull Message.Request request, @NonNull Protoo.ServerRequestHandler handler) {
-          Logger.d(TAG, "onRequest() " + request.getData().toString());
+          Logger.d(TAG, "onRequest() " + request.getMethod());
           mWorkHandler.post(
               () -> {
                 try {
@@ -664,24 +665,14 @@ public class RoomClient extends RoomMessageHandler {
     Logger.d(TAG, "joinImpl()");
 
     try {
+      Log.e(TAG, "RTP CAPPPP: ");
       mMediasoupDevice = new Device();
       String routerRtpCapabilities = mProtoo.syncRequest("getRouterRtpCapabilities");
       mMediasoupDevice.load(routerRtpCapabilities);
       String rtpCapabilities = mMediasoupDevice.getRtpCapabilities();
-
-      // Create mediasoup Transport for sending (unless we don't want to produce).
-//      if (mOptions.isProduce()) {
-//        createSendTransport();
-//      }
+      Log.e(TAG, "RTP CAP: " + rtpCapabilities);
       createSendTransport();
-
-
-      // Create mediasoup Transport for sending (unless we don't want to consume).
-//      if (mOptions.isConsume()) {
-//      }
       createRecvTransport();
-
-
       // Join now into the room.
       // TODO(HaiyangWu): Don't send our RTP capabilities if we don't want to consume.
       String joinResponse =
@@ -697,7 +688,6 @@ public class RoomClient extends RoomMessageHandler {
 
       mStore.setRoomState(ConnectionState.CONNECTED);
       mStore.addNotify("You are in the room!", 3000);
-
       JSONObject resObj = JsonUtils.toJsonObject(joinResponse);
       JSONArray peers = resObj.optJSONArray("peers");
       for (int i = 0; peers != null && i < peers.length(); i++) {
@@ -706,13 +696,18 @@ public class RoomClient extends RoomMessageHandler {
       }
 
       // Enable mic/webcam.
-      if (mOptions.isProduce()) {
-        boolean canSendMic = mMediasoupDevice.canProduce("audio");
-        boolean canSendCam = mMediasoupDevice.canProduce("video");
-        mStore.setMediaCapabilities(canSendMic, canSendCam);
-        mMainHandler.post(this::enableMic);
-        mMainHandler.post(this::enableCam);
-      }
+//      if (mOptions.isProduce()) {
+//        boolean canSendMic = mMediasoupDevice.canProduce("audio");
+//        boolean canSendCam = mMediasoupDevice.canProduce("video");
+//        mStore.setMediaCapabilities(canSendMic, canSendCam);
+//        mMainHandler.post(this::enableMic);
+//        mMainHandler.post(this::enableCam);
+//      }
+      boolean canSendMic = mMediasoupDevice.canProduce("audio");
+      boolean canSendCam = mMediasoupDevice.canProduce("video");
+      mStore.setMediaCapabilities(canSendMic, canSendCam);
+      mMainHandler.post(this::enableCam);
+      mMainHandler.post(this::enableMic);
     } catch (Exception e) {
       e.printStackTrace();
       logError("joinRoom() failed:", e);
@@ -808,6 +803,7 @@ public class RoomClient extends RoomMessageHandler {
   @WorkerThread
   private void unmuteMicImpl() {
     Logger.d(TAG, "unmuteMicImpl()");
+    if (mMicProducer == null) return;
     mMicProducer.resume();
 
     try {
@@ -951,13 +947,22 @@ public class RoomClient extends RoomMessageHandler {
           if (mClosed) {
             return "";
           }
-          Logger.d(listenerTAG, "onProduce() ");
+          Logger.d(listenerTAG, "onProduce() " + rtpParameters);
+          JSONObject rtpJsonObject = toJsonObject(rtpParameters);
+          try {
+            JSONArray codecs = rtpJsonObject.getJSONArray("codecs");
+            JSONObject audio = codecs.getJSONObject(0);
+            audio.put("channels", 2);
+          } catch (JSONException e) {
+            e.printStackTrace();
+          }
+          Log.d(TAG, "RTP OBJ: " + rtpJsonObject);
           String producerId =
               fetchProduceId(
                   req -> {
                     jsonPut(req, "transportId", transport.getId());
                     jsonPut(req, "kind", kind);
-                    jsonPut(req, "rtpParameters", toJsonObject(rtpParameters));
+                    jsonPut(req, "rtpParameters", rtpJsonObject);
                     jsonPut(req, "appData", appData);
                   });
           Logger.d(listenerTAG, "producerId: " + producerId);
@@ -1050,7 +1055,8 @@ public class RoomClient extends RoomMessageHandler {
       String type = data.optString("type");
       String appData = data.optString("appData");
       boolean producerPaused = data.optBoolean("producerPaused");
-      Logger.d(TAG,"Comsume remove");
+//      if (mimeType.startsWith("audio")) return;
+      Logger.d(TAG,"Comsume remove "  + request.getMethod() + " " + type);
       Consumer consumer =
           mRecvTransport.consume(
               c -> {
@@ -1072,9 +1078,9 @@ public class RoomClient extends RoomMessageHandler {
       handler.accept();
 
       // If audio-only mode is enabled, pause it.
-      if ("video".equals(consumer.getKind()) && mStore.getMe().getValue().isAudioOnly()) {
-        pauseConsumer(consumer);
-      }
+//      if ("video".equals(consumer.getKind()) && mStore.getMe().getValue().isAudioOnly()) {
+//        pauseConsumer(consumer);
+//      }
     } catch (Exception e) {
       e.printStackTrace();
       logError("\"newConsumer\" request failed:", e);

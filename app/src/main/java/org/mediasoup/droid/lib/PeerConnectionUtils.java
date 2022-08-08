@@ -141,7 +141,7 @@ public class PeerConnectionUtils {
     mThreadChecker.checkIsOnValidThread();
     boolean isCamera2Supported = Camera2Enumerator.isSupported(context);
     CameraEnumerator cameraEnumerator;
-
+    Logger.e(TAG, "Is Camera2 supported: " + isCamera2Supported);
     if (isCamera2Supported) {
       cameraEnumerator = new Camera2Enumerator(context);
     } else {

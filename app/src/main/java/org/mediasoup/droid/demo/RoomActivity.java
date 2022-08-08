@@ -34,6 +34,8 @@ import org.mediasoup.droid.demo.vm.RoomProps;
 import org.mediasoup.droid.lib.PeerConnectionUtils;
 import org.mediasoup.droid.lib.RoomClient;
 import org.mediasoup.droid.lib.RoomOptions;
+import org.mediasoup.droid.lib.UrlFactory;
+import org.mediasoup.droid.lib.Utils;
 import org.mediasoup.droid.lib.lv.RoomStore;
 import org.mediasoup.droid.lib.model.Me;
 import org.mediasoup.droid.lib.model.Notify;
@@ -69,6 +71,12 @@ public class RoomActivity extends AppCompatActivity {
 
   private void createRoom() {
     Log.e(TAG, "Createeeeeeeeee Roommmmmmmmmmmmmmmm");
+    Intent intent = getIntent();
+    String url = intent.getStringExtra("url");
+    int port = Integer.parseInt(intent.getStringExtra("port"));
+    UrlFactory.setHost(url, port);
+    mRoomId = intent.getStringExtra("roomId");
+    mDisplayName = intent.getStringExtra("name");
     mOptions = new RoomOptions();
     loadRoomConfig();
 
@@ -83,33 +91,38 @@ public class RoomActivity extends AppCompatActivity {
     SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
 
     // Room initial config.
-    mRoomId = preferences.getString("roomId", "");
-    mPeerId = preferences.getString("peerId", "");
-    mDisplayName = preferences.getString("displayName", "");
-    mForceH264 = preferences.getBoolean("forceH264", false);
-    mForceVP9 = preferences.getBoolean("forceVP9", false);
-    mRoomId = "zps_zoom";
+//    mRoomId = preferences.getString("roomId", "");
+//    mPeerId = preferences.getString("peerId", "");
+//    mDisplayName = preferences.getString("displayName", "");
+//    mForceH264 = preferences.getBoolean("forceH264", false);
+//    mForceVP9 = preferences.getBoolean("forceVP9", false);
+//    mRoomId = "zps_zoom";
     preferences.edit().putString("roomId", mRoomId).apply();
     if (TextUtils.isEmpty(mPeerId)) {
       mPeerId = getRandomString(8);
       preferences.edit().putString("peerId", mPeerId).apply();
     }
-    if (TextUtils.isEmpty(mDisplayName)) {
-      mDisplayName = getRandomString(8);
-      preferences.edit().putString("displayName", mDisplayName).apply();
-    }
+//    if (TextUtils.isEmpty(mDisplayName)) {
+//      mDisplayName = getRandomString(8);
+//      preferences.edit().putString("displayName", mDisplayName).apply();
+//    }
 
     // Room action config.
-    mOptions.setProduce(preferences.getBoolean("produce", true));
-    mOptions.setConsume(preferences.getBoolean("consume", true));
-    mOptions.setForceTcp(preferences.getBoolean("forceTcp", false));
+//    mOptions.setProduce(preferences.getBoolean("produce", true));
+//    mOptions.setConsume(preferences.getBoolean("consume", true));
+//    mOptions.setForceTcp(preferences.getBoolean("forceTcp", false));
+      mForceH264 = false;
+      mForceVP9 = false;
+      mOptions.setProduce(true);
+      mOptions.setConsume(true);
+      mOptions.setForceTcp(false);
 
     // Device config.
     String camera = preferences.getString("camera", "front");
     PeerConnectionUtils.setPreferCameraFace(camera);
 
     // Display version number.
-    ((TextView)findViewById(R.id.version)).setText(String.valueOf(MediasoupClient.version()));
+//    ((TextView)findViewById(R.id.version)).setText(String.valueOf(MediasoupClient.version()));
   }
 
   private void initRoomClient() {
@@ -187,12 +200,12 @@ public class RoomActivity extends AppCompatActivity {
             return;
           }
           if ("error".equals(notify.getType())) {
-            Toast toast = Toast.makeText(this, notify.getText(), notify.getTimeout());
+            Toast toast = Toast.makeText(this, notify.getText(), (short) notify.getTimeout());
             TextView toastMessage = toast.getView().findViewById(android.R.id.message);
             toastMessage.setTextColor(Color.RED);
             toast.show();
           } else {
-            Toast.makeText(this, notify.getText(), notify.getTimeout()).show();
+            Toast.makeText(this, notify.getText(), (short) notify.getTimeout()).show();
           }
         };
     mRoomStore.getNotify().observe(this, notifyObserver);
